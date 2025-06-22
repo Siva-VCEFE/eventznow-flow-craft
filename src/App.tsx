@@ -10,6 +10,13 @@ import Signup from "./pages/Signup";
 import OrganizationSetup from "./pages/OrganizationSetup";
 import Dashboard from "./pages/Dashboard";
 import CreateEvent from "./pages/CreateEvent";
+import Events from "./pages/Events";
+import EventDetails from "./pages/EventDetails";
+import Participants from "./pages/Participants";
+import Tasks from "./pages/Tasks";
+import Team from "./pages/Team";
+import Analytics from "./pages/Analytics";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +34,13 @@ const App = () => (
           <Route path="/organization-setup" element={<OrganizationSetup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-event" element={<CreateEvent />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:id" element={<EventDetails />} />
+          <Route path="/participants" element={<Participants />} />
+          <Route path="/tasks" element={<Tasks />} />
+          <Route path="/team" element={<Team />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
