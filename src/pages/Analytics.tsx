@@ -1,91 +1,108 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
+  BarChart3, 
   TrendingUp, 
   Users, 
-  Calendar, 
   DollarSign,
+  Calendar,
   Download,
   Filter,
-  BarChart3,
-  PieChart,
-  Activity
+  Clock
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
+import TimeTrackingReports from "@/components/TimeTrackingReports";
+import SubscriptionModel from "@/components/SubscriptionModel";
 
 const Analytics = () => {
+  const [dateRange, setDateRange] = useState("last-30-days");
+
   const overviewStats = [
     {
       title: "Total Revenue",
-      value: "$48,532",
+      value: "$47,890",
       change: "+12.5%",
-      icon: DollarSign,
-      color: "text-green-600"
+      changeType: "positive",
+      icon: DollarSign
     },
     {
       title: "Total Events",
-      value: "28",
-      change: "+8 this month",
-      icon: Calendar,
-      color: "text-blue-600"
+      value: "23",
+      change: "+8.3%",
+      changeType: "positive",
+      icon: Calendar
     },
     {
       title: "Total Participants",
       value: "2,847",
-      change: "+23% from last month",
-      icon: Users,
-      color: "text-purple-600"
+      change: "+15.2%",
+      changeType: "positive",
+      icon: Users
     },
     {
-      title: "Conversion Rate",
-      value: "68.4%",
-      change: "+5.2% from last month",
-      icon: TrendingUp,
-      color: "text-orange-600"
+      title: "Avg Event Revenue",
+      value: "$2,082",
+      change: "+5.1%",
+      changeType: "positive",
+      icon: TrendingUp
     }
   ];
 
   const eventPerformance = [
     {
-      name: "Tech Conference 2024",
-      registrations: 245,
-      revenue: "$18,900",
-      conversionRate: "72%",
-      status: "Completed"
+      event: "Tech Conference 2024",
+      registrations: 145,
+      revenue: "$12,500",
+      satisfaction: 4.8,
+      taskEfficiency: 92,
+      teamHours: 65.2
     },
     {
-      name: "Product Launch Webinar",
-      registrations: 189,
+      event: "Product Launch Webinar",
+      registrations: 89,
       revenue: "$0",
-      conversionRate: "89%",
-      status: "Active"
+      satisfaction: 4.2,
+      taskEfficiency: 78,
+      teamHours: 28.5
     },
     {
-      name: "Marketing Workshop",
-      registrations: 156,
-      revenue: "$7,800",
-      conversionRate: "65%",
-      status: "Upcoming"
-    },
-    {
-      name: "Design Thinking Session",
-      registrations: 98,
-      revenue: "$4,900",
-      conversionRate: "58%",
-      status: "Completed"
+      event: "Marketing Workshop",
+      registrations: 67,
+      revenue: "$3,400",
+      satisfaction: 4.6,
+      taskEfficiency: 85,
+      teamHours: 42.8
     }
   ];
 
-  const registrationTrends = [
-    { month: "Jan", registrations: 120, revenue: 6000 },
-    { month: "Feb", registrations: 180, revenue: 9000 },
-    { month: "Mar", registrations: 240, revenue: 12000 },
-    { month: "Apr", registrations: 200, revenue: 10000 },
-    { month: "May", registrations: 290, revenue: 14500 },
-    { month: "Jun", registrations: 350, revenue: 17500 }
+  const revenueByMonth = [
+    { month: "Jan", revenue: 8500, events: 3 },
+    { month: "Feb", revenue: 12300, events: 4 },
+    { month: "Mar", revenue: 15600, events: 5 },
+    { month: "Apr", revenue: 11200, events: 4 },
+    { month: "May", revenue: 18900, events: 6 },
+    { month: "Jun", revenue: 21400, events: 7 }
   ];
+
+  const participantDemographics = {
+    bySource: [
+      { source: "Website", count: 1245, percentage: 44 },
+      { source: "Social Media", count: 892, percentage: 31 },
+      { source: "Email Campaign", count: 456, percentage: 16 },
+      { source: "Referral", count: 254, percentage: 9 }
+    ],
+    byLocation: [
+      { location: "San Francisco", count: 658, percentage: 23 },
+      { location: "New York", count: 542, percentage: 19 },
+      { location: "Los Angeles", count: 423, percentage: 15 },
+      { location: "Chicago", count: 389, percentage: 14 },
+      { location: "Other", count: 835, percentage: 29 }
+    ]
+  };
 
   return (
     <DashboardLayout>
@@ -94,7 +111,7 @@ const Analytics = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Analytics & Reports</h1>
-            <p className="text-gray-600 mt-1">Track performance and insights across all your events</p>
+            <p className="text-gray-600 mt-1">Comprehensive insights into your events, team, and revenue</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline">
@@ -108,135 +125,105 @@ const Analytics = () => {
           </div>
         </div>
 
-        {/* Overview Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {overviewStats.map((stat, index) => (
-            <Card key={index} className="border-0 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
-                    <p className={`text-xs mt-1 ${stat.color}`}>{stat.change}</p>
-                  </div>
-                  <div className={`p-3 rounded-full bg-gray-50 ${stat.color}`}>
-                    <stat.icon className="w-6 h-6" />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Analytics Tabs */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
-            <TabsTrigger value="participants">Participants</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="participants">Participants</TabsTrigger>
+            <TabsTrigger value="time-tracking">Time Tracking</TabsTrigger>
+            <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
+            {/* Overview Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {overviewStats.map((stat, index) => (
+                <Card key={index} className="border-0 shadow-sm">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">{stat.title}</p>
+                        <p className="text-2xl font-bold text-gray-900 mt-2">{stat.value}</p>
+                        <p className={`text-xs mt-1 ${stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'}`}>
+                          {stat.change} from last month
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-full bg-gray-50">
+                        <stat.icon className="w-6 h-6 text-blue-600" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            {/* Quick Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Registration Trends Chart */}
-              <Card className="border-0 shadow-sm">
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="w-5 h-5" />
-                    Registration Trends
-                  </CardTitle>
-                  <CardDescription>Monthly registration and revenue growth</CardDescription>
+                  <CardTitle>Revenue Trend</CardTitle>
+                  <CardDescription>Monthly revenue and event count</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
-                    <div className="text-center">
-                      <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Registration trends chart would be displayed here</p>
-                      <p className="text-sm text-gray-400 mt-1">Integration with chart library needed</p>
-                    </div>
+                  <div className="h-64 flex items-center justify-center text-gray-500">
+                    Revenue chart visualization would go here
                   </div>
                 </CardContent>
               </Card>
-
-              {/* Event Types Distribution */}
-              <Card className="border-0 shadow-sm">
+              
+              <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <PieChart className="w-5 h-5" />
-                    Event Categories
-                  </CardTitle>
-                  <CardDescription>Distribution of events by category</CardDescription>
+                  <CardTitle>Event Performance</CardTitle>
+                  <CardDescription>Registration vs satisfaction scores</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-64 flex items-center justify-center border-2 border-dashed border-gray-200 rounded-lg">
-                    <div className="text-center">
-                      <PieChart className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-500">Event distribution pie chart would be displayed here</p>
-                      <p className="text-sm text-gray-400 mt-1">Shows breakdown by event types</p>
-                    </div>
+                  <div className="h-64 flex items-center justify-center text-gray-500">
+                    Performance chart visualization would go here
                   </div>
                 </CardContent>
               </Card>
             </div>
-
-            {/* Quick Insights */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle>Key Insights</CardTitle>
-                <CardDescription>Important metrics and trends from your events</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-4 bg-blue-50 rounded-lg">
-                    <Activity className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                    <h3 className="font-semibold text-blue-900">Peak Registration Day</h3>
-                    <p className="text-blue-700">Tuesdays see 35% more registrations</p>
-                  </div>
-                  <div className="text-center p-4 bg-green-50 rounded-lg">
-                    <TrendingUp className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                    <h3 className="font-semibold text-green-900">Best Performing Event</h3>
-                    <p className="text-green-700">Tech Conference had 95% attendance</p>
-                  </div>
-                  <div className="text-center p-4 bg-purple-50 rounded-lg">
-                    <Users className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                    <h3 className="font-semibold text-purple-900">Audience Growth</h3>
-                    <p className="text-purple-700">23% increase in repeat attendees</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           <TabsContent value="events" className="space-y-6">
-            <Card className="border-0 shadow-sm">
+            <Card>
               <CardHeader>
-                <CardTitle>Event Performance Analysis</CardTitle>
-                <CardDescription>Detailed performance metrics for each event</CardDescription>
+                <CardTitle>Event Performance Report</CardTitle>
+                <CardDescription>Detailed analysis of all events including team efficiency</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {eventPerformance.map((event, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900">{event.name}</h4>
-                        <div className="flex items-center gap-4 mt-1 text-sm text-gray-600">
-                          <span>{event.registrations} registrations</span>
-                          <span>•</span>
-                          <span>{event.conversionRate} conversion rate</span>
-                          <span>•</span>
-                          <span className={`px-2 py-1 rounded text-xs ${
-                            event.status === 'Active' ? 'bg-green-100 text-green-800' :
-                            event.status === 'Completed' ? 'bg-blue-100 text-blue-800' :
-                            'bg-orange-100 text-orange-800'
-                          }`}>
-                            {event.status}
-                          </span>
-                        </div>
+                    <div key={index} className="p-4 border border-gray-200 rounded-lg">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-semibold text-lg">{event.event}</h4>
+                        <Badge variant="secondary">{event.registrations} registered</Badge>
                       </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-900">{event.revenue}</p>
-                        <p className="text-sm text-gray-600">Revenue</p>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">Revenue</p>
+                          <p className="font-semibold text-lg">{event.revenue}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Satisfaction</p>
+                          <p className="font-semibold text-lg">{event.satisfaction}/5.0</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Task Efficiency</p>
+                          <p className="font-semibold text-lg">{event.taskEfficiency}%</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Team Hours</p>
+                          <p className="font-semibold text-lg">{event.teamHours}h</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">ROI</p>
+                          <p className="font-semibold text-lg text-green-600">
+                            {event.revenue !== "$0" ? "245%" : "N/A"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -245,68 +232,46 @@ const Analytics = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="participants" className="space-y-6">
+          <TabsContent value="revenue" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-sm">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Participant Demographics</CardTitle>
-                  <CardDescription>Breakdown of participant characteristics</CardDescription>
+                  <CardTitle>Revenue by Month</CardTitle>
+                  <CardDescription>Track monthly revenue growth</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Age 18-25</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full">
-                          <div className="w-3/4 h-2 bg-blue-600 rounded-full"></div>
+                  <div className="space-y-3">
+                    {revenueByMonth.map((month, index) => (
+                      <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
+                        <span className="font-medium">{month.month}</span>
+                        <div className="text-right">
+                          <p className="font-semibold">${month.revenue.toLocaleString()}</p>
+                          <p className="text-sm text-gray-600">{month.events} events</p>
                         </div>
-                        <span className="text-sm font-medium">45%</span>
                       </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Age 26-35</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full">
-                          <div className="w-1/2 h-2 bg-green-600 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-medium">35%</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Age 36+</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full">
-                          <div className="w-1/5 h-2 bg-purple-600 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-medium">20%</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-
-              <Card className="border-0 shadow-sm">
+              
+              <Card>
                 <CardHeader>
-                  <CardTitle>Participant Engagement</CardTitle>
-                  <CardDescription>How participants interact with events</CardDescription>
+                  <CardTitle>Revenue Sources</CardTitle>
+                  <CardDescription>Breakdown by event type and pricing</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Event Attendance Rate</span>
-                      <span className="text-lg font-semibold text-gray-900">87%</span>
+                    <div className="flex justify-between items-center p-3 border rounded">
+                      <span>Paid Events</span>
+                      <span className="font-semibold">$45,230 (94.4%)</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Average Session Duration</span>
-                      <span className="text-lg font-semibold text-gray-900">2.3 hrs</span>
+                    <div className="flex justify-between items-center p-3 border rounded">
+                      <span>Sponsorships</span>
+                      <span className="font-semibold">$2,660 (5.6%)</span>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Repeat Participants</span>
-                      <span className="text-lg font-semibold text-gray-900">42%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Post-Event Surveys</span>
-                      <span className="text-lg font-semibold text-gray-900">4.6/5</span>
+                    <div className="flex justify-between items-center p-3 border rounded">
+                      <span>Premium Features</span>
+                      <span className="font-semibold">$890 (1.9%)</span>
                     </div>
                   </div>
                 </CardContent>
@@ -314,69 +279,83 @@ const Analytics = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="revenue" className="space-y-6">
+          <TabsContent value="participants" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-sm">
+              <Card>
                 <CardHeader>
-                  <CardTitle>Revenue by Event Type</CardTitle>
-                  <CardDescription>Revenue breakdown across different event categories</CardDescription>
+                  <CardTitle>Participant Sources</CardTitle>
+                  <CardDescription>Where participants are coming from</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
-                      <span className="font-medium text-blue-900">Conferences</span>
-                      <span className="font-bold text-blue-900">$28,400</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-green-50 rounded">
-                      <span className="font-medium text-green-900">Workshops</span>
-                      <span className="font-bold text-green-900">$12,800</span>
-                    </div>
-                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded">
-                      <span className="font-medium text-purple-900">Webinars</span>
-                      <span className="font-bold text-purple-900">$7,332</span>
-                    </div>
+                  <div className="space-y-3">
+                    {participantDemographics.bySource.map((source, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <span>{source.source}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">{source.count}</span>
+                          <Badge variant="outline">{source.percentage}%</Badge>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-
-              <Card className="border-0 shadow-sm">
+              
+              <Card>
                 <CardHeader>
-                  <CardTitle>Payment Methods</CardTitle>
-                  <CardDescription>How participants prefer to pay</CardDescription>
+                  <CardTitle>Geographic Distribution</CardTitle>
+                  <CardDescription>Participant locations</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Credit/Debit Cards</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full">
-                          <div className="w-4/5 h-2 bg-blue-600 rounded-full"></div>
+                  <div className="space-y-3">
+                    {participantDemographics.byLocation.map((location, index) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <span>{location.location}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">{location.count}</span>
+                          <Badge variant="outline">{location.percentage}%</Badge>
                         </div>
-                        <span className="text-sm font-medium">78%</span>
                       </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Digital Wallets</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full">
-                          <div className="w-1/5 h-2 bg-green-600 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-medium">15%</span>
-                      </div>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-600">Bank Transfer</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-24 h-2 bg-gray-200 rounded-full">
-                          <div className="w-1/12 h-2 bg-purple-600 rounded-full"></div>
-                        </div>
-                        <span className="text-sm font-medium">7%</span>
-                      </div>
-                    </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Participant Engagement Metrics</CardTitle>
+                <CardDescription>Detailed engagement and retention analytics</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-600">87%</p>
+                    <p className="text-sm text-gray-600">Attendance Rate</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">4.6</p>
+                    <p className="text-sm text-gray-600">Avg Satisfaction</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-purple-600">23%</p>
+                    <p className="text-sm text-gray-600">Repeat Participants</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-orange-600">3.2</p>
+                    <p className="text-sm text-gray-600">Avg Events per User</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="time-tracking">
+            <TimeTrackingReports />
+          </TabsContent>
+
+          <TabsContent value="subscription">
+            <SubscriptionModel />
           </TabsContent>
         </Tabs>
       </div>

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,8 @@ import {
   MessageSquare,
   FileText,
   Download,
-  UserPlus
+  UserPlus,
+  Settings
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
@@ -36,10 +36,21 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import AddParticipantDialog from "@/components/AddParticipantDialog";
+import ParticipantHistory from "@/components/ParticipantHistory";
 
 const Participants = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedEvent, setSelectedEvent] = useState("all");
+  const [multiAgentCalling, setMultiAgentCalling] = useState(false);
 
   const participants = [
     {
@@ -106,6 +117,32 @@ const Participants = () => {
      participant.event.toLowerCase().includes(searchTerm.toLowerCase())) &&
     (selectedEvent === "all" || participant.event === selectedEvent)
   );
+
+  const handleExport = () => {
+    // Create CSV content
+    const headers = ['Name', 'Email', 'Phone', 'Event', 'Registration Date', 'Status', 'Last Called'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredParticipants.map(p => [
+        p.name,
+        p.email,
+        p.phone,
+        p.event,
+        p.registrationDate,
+        p.status,
+        p.lastCalled || 'Never'
+      ].join(','))
+    ].join('\n');
+
+    // Download CSV
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'participants.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   const CallNotesDialog = ({ participant }: { participant: any }) => {
     const [newNote, setNewNote] = useState("");
@@ -174,6 +211,69 @@ const Participants = () => {
     );
   };
 
+  const MultiAgentSettingsDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Settings className="w-4 h-4 mr-2" />
+          Call Settings
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Multi-Agent Calling Settings</DialogTitle>
+          <DialogDescription>
+            Configure how multiple team members can call the same participant
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <Label>Allow Multiple Agents</Label>
+              <p className="text-sm text-gray-500">Multiple team members can call the same participant</p>
+            </div>
+            <Switch 
+              checked={multiAgentCalling} 
+              onCheckedChange={setMultiAgentCalling}
+            />
+          </div>
+          
+          {multiAgentCalling && (
+            <div className="space-y-4 border-t pt-4">
+              <div>
+                <Label>Call Coordination Rules</Label>
+                <Select defaultValue="notify">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="notify">Notify other agents before calling</SelectItem>
+                    <SelectItem value="queue">Queue calls to avoid conflicts</SelectItem>
+                    <SelectItem value="priority">Use agent priority system</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label>Max Concurrent Calls per Participant</Label>
+                <Select defaultValue="1">
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1 call at a time</SelectItem>
+                    <SelectItem value="2">2 calls maximum</SelectItem>
+                    <SelectItem value="unlimited">No limit</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <DashboardLayout>
       <div className="space-y-8">
@@ -184,14 +284,12 @@ const Participants = () => {
             <p className="text-gray-600 mt-1">Manage all event participants and communications</p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleExport}>
               <Download className="w-4 h-4 mr-2" />
               Export
             </Button>
-            <Button variant="outline">
-              <UserPlus className="w-4 h-4 mr-2" />
-              Add Participant
-            </Button>
+            <AddParticipantDialog />
+            <MultiAgentSettingsDialog />
           </div>
         </div>
 
@@ -342,6 +440,7 @@ const Participants = () => {
                           Call
                         </Button>
                         <CallNotesDialog participant={participant} />
+                        <ParticipantHistory participant={participant} />
                       </div>
                     </TableCell>
                   </TableRow>

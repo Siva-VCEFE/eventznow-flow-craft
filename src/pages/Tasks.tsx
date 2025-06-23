@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { 
   CheckSquare, 
-  Plus,
   Search,
   Filter,
   Calendar,
@@ -14,7 +13,8 @@ import {
   Clock,
   CheckCircle,
   Circle,
-  AlertTriangle
+  AlertTriangle,
+  Users
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import {
@@ -26,7 +26,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -34,10 +33,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import TaskAssignmentDialog from "@/components/TaskAssignmentDialog";
 
 const Tasks = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [filterPriority, setFilterPriority] = useState("all");
+  const [filterAssignee, setFilterAssignee] = useState("all");
 
   const tasks = [
     {
@@ -46,25 +48,32 @@ const Tasks = () => {
       description: "Contact all VIP ticket holders for special arrangements and confirm their attendance",
       event: "Tech Conference 2024",
       assignee: "Sarah Johnson",
+      assigneeType: "individual",
       assigneeEmail: "sarah@eventznow.com",
       dueDate: "2024-03-10",
       status: "In Progress",
       priority: "High",
       createdDate: "2024-02-15",
-      tags: ["VIP", "Follow-up"]
+      tags: ["VIP", "Follow-up"],
+      estimatedHours: 6,
+      actualHours: 4.5,
+      teamMembers: []
     },
     {
       id: 2,
       title: "Setup registration desk",
       description: "Prepare registration area with banners, materials, and check-in systems",
       event: "Tech Conference 2024",
-      assignee: "Mike Chen",
-      assigneeEmail: "mike@eventznow.com",
+      assignee: "Event Setup Team",
+      assigneeType: "team",
+      teamMembers: ["Mike Chen", "Lisa Park", "David Wilson"],
       dueDate: "2024-03-14",
       status: "Pending",
       priority: "Medium",
       createdDate: "2024-02-20",
-      tags: ["Setup", "Registration"]
+      tags: ["Setup", "Registration"],
+      estimatedHours: 8,
+      actualHours: 0
     },
     {
       id: 3,
@@ -72,25 +81,32 @@ const Tasks = () => {
       description: "Send event details, schedule, and logistics information to all registered participants",
       event: "Marketing Workshop",
       assignee: "Lisa Park",
+      assigneeType: "individual",
       assigneeEmail: "lisa@eventznow.com",
       dueDate: "2024-03-12",
       status: "Completed",
       priority: "Low",
       createdDate: "2024-02-18",
-      tags: ["Email", "Communication"]
+      tags: ["Email", "Communication"],
+      estimatedHours: 3,
+      actualHours: 2.8,
+      teamMembers: []
     },
     {
       id: 4,
       title: "Coordinate catering setup",
       description: "Finalize menu, confirm headcount, and coordinate with catering team for event day",
       event: "Product Launch Webinar",
-      assignee: "David Wilson",
-      assigneeEmail: "david@eventznow.com",
+      assignee: "Logistics Team",
+      assigneeType: "team",
+      teamMembers: ["David Wilson", "Alex Johnson"],
       dueDate: "2024-03-08",
       status: "Overdue",
       priority: "High",
       createdDate: "2024-02-10",
-      tags: ["Catering", "Logistics"]
+      tags: ["Catering", "Logistics"],
+      estimatedHours: 5,
+      actualHours: 6.2
     },
     {
       id: 5,
@@ -98,12 +114,16 @@ const Tasks = () => {
       description: "Check all audio/visual equipment, microphones, and presentation setup",
       event: "Tech Conference 2024",
       assignee: "Alex Johnson",
+      assigneeType: "individual",
       assigneeEmail: "alex@eventznow.com",
       dueDate: "2024-03-13",
       status: "In Progress",
       priority: "Medium",
       createdDate: "2024-02-22",
-      tags: ["AV", "Technical"]
+      tags: ["AV", "Technical"],
+      estimatedHours: 4,
+      actualHours: 2.1,
+      teamMembers: []
     }
   ];
 
@@ -113,9 +133,11 @@ const Tasks = () => {
                          task.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          task.assignee.toLowerCase().includes(searchTerm.toLowerCase());
     
-    const matchesFilter = filterStatus === "all" || task.status.toLowerCase().replace(' ', '') === filterStatus;
+    const matchesStatus = filterStatus === "all" || task.status.toLowerCase().replace(' ', '') === filterStatus;
+    const matchesPriority = filterPriority === "all" || task.priority.toLowerCase() === filterPriority;
+    const matchesAssignee = filterAssignee === "all" || task.assignee.toLowerCase().includes(filterAssignee.toLowerCase());
     
-    return matchesSearch && matchesFilter;
+    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
   });
 
   const getStatusIcon = (status: string) => {
@@ -153,121 +175,73 @@ const Tasks = () => {
     }
   };
 
-  const CreateTaskDialog = () => {
-    const [newTask, setNewTask] = useState({
-      title: "",
-      description: "",
-      event: "",
-      assignee: "",
-      dueDate: "",
-      priority: "Medium"
-    });
-
-    return (
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Task
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Create New Task</DialogTitle>
-            <DialogDescription>
-              Add a new task for your event team to track and complete
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="task-title">Task Title</Label>
-              <Input
-                id="task-title"
-                placeholder="Enter task title..."
-                value={newTask.title}
-                onChange={(e) => setNewTask({...newTask, title: e.target.value})}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="task-description">Description</Label>
-              <Textarea
-                id="task-description"
-                placeholder="Enter task description..."
-                value={newTask.description}
-                onChange={(e) => setNewTask({...newTask, description: e.target.value})}
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="task-event">Event</Label>
-                <Select value={newTask.event} onValueChange={(value) => setNewTask({...newTask, event: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select event" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="tech-conference">Tech Conference 2024</SelectItem>
-                    <SelectItem value="product-launch">Product Launch Webinar</SelectItem>
-                    <SelectItem value="marketing-workshop">Marketing Workshop</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="task-assignee">Assignee</Label>
-                <Select value={newTask.assignee} onValueChange={(value) => setNewTask({...newTask, assignee: value})}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select assignee" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                    <SelectItem value="mike">Mike Chen</SelectItem>
-                    <SelectItem value="lisa">Lisa Park</SelectItem>
-                    <SelectItem value="david">David Wilson</SelectItem>
-                    <SelectItem value="alex">Alex Johnson</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="task-due-date">Due Date</Label>
-                <Input
-                  id="task-due-date"
-                  type="date"
-                  value={newTask.dueDate}
-                  onChange={(e) => setNewTask({...newTask, dueDate: e.target.value})}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="task-priority">Priority</Label>
-                <Select value={newTask.priority} onValueChange={(value) => setNewTask({...newTask, priority: value})}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Low">Low</SelectItem>
-                    <SelectItem value="Medium">Medium</SelectItem>
-                    <SelectItem value="High">High</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline">Cancel</Button>
-              <Button>Create Task</Button>
-            </div>
+  const TaskFiltersDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Filter className="w-4 h-4 mr-2" />
+          More Filters
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Advanced Task Filters</DialogTitle>
+          <DialogDescription>Apply detailed filters to find specific tasks</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label>Status</Label>
+            <Select value={filterStatus} onValueChange={setFilterStatus}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="inprogress">In Progress</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="overdue">Overdue</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </DialogContent>
-      </Dialog>
-    );
-  };
+          
+          <div>
+            <Label>Priority</Label>
+            <Select value={filterPriority} onValueChange={setFilterPriority}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Priorities</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Medium</SelectItem>
+                <SelectItem value="high">High</SelectItem>
+                <SelectItem value="critical">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <Label>Assignee</Label>
+            <Select value={filterAssignee} onValueChange={setFilterAssignee}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Assignees</SelectItem>
+                <SelectItem value="sarah">Sarah Johnson</SelectItem>
+                <SelectItem value="mike">Mike Chen</SelectItem>
+                <SelectItem value="lisa">Lisa Park</SelectItem>
+                <SelectItem value="david">David Wilson</SelectItem>
+                <SelectItem value="alex">Alex Johnson</SelectItem>
+                <SelectItem value="team">Team Tasks</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 
   return (
     <DashboardLayout>
@@ -278,7 +252,7 @@ const Tasks = () => {
             <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
             <p className="text-gray-600 mt-1">Track and manage all event-related tasks and assignments</p>
           </div>
-          <CreateTaskDialog />
+          <TaskAssignmentDialog />
         </div>
 
         {/* Search and Filters */}
@@ -303,10 +277,7 @@ const Tasks = () => {
             <option value="completed">Completed</option>
             <option value="overdue">Overdue</option>
           </select>
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            More Filters
-          </Button>
+          <TaskFiltersDialog />
         </div>
 
         {/* Stats Cards */}
@@ -355,12 +326,12 @@ const Tasks = () => {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Overdue</p>
+                  <p className="text-sm font-medium text-gray-600">Team Tasks</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {tasks.filter(t => t.status === 'Overdue').length}
+                    {tasks.filter(t => t.assigneeType === 'team').length}
                   </p>
                 </div>
-                <AlertTriangle className="w-8 h-8 text-red-600" />
+                <Users className="w-8 h-8 text-orange-600" />
               </div>
             </CardContent>
           </Card>
@@ -390,6 +361,12 @@ const Tasks = () => {
                           <Badge variant={getStatusColor(task.status) as any}>
                             {task.status}
                           </Badge>
+                          {task.assigneeType === 'team' && (
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              Team Task
+                            </Badge>
+                          )}
                         </div>
                         <p className="text-sm text-gray-600 mb-3">{task.description}</p>
                       </div>
@@ -401,14 +378,37 @@ const Tasks = () => {
                         Event: {task.event}
                       </div>
                       <div className="flex items-center gap-1">
-                        <User className="w-4 h-4" />
+                        {task.assigneeType === 'team' ? <Users className="w-4 h-4" /> : <User className="w-4 h-4" />}
                         {task.assignee}
+                        {task.assigneeType === 'team' && (
+                          <span className="text-xs text-gray-500">
+                            ({task.teamMembers.length} members)
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-1">
                         <Clock className="w-4 h-4" />
                         Due: {task.dueDate}
                       </div>
+                      {task.estimatedHours && (
+                        <div className="text-xs">
+                          Time: {task.actualHours || 0}h / {task.estimatedHours}h
+                        </div>
+                      )}
                     </div>
+
+                    {task.assigneeType === 'team' && task.teamMembers.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-500 mb-1">Team Members:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {task.teamMembers.map((member, index) => (
+                            <Badge key={index} variant="outline" className="text-xs">
+                              {member}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     <div className="flex items-center gap-2">
                       {task.tags.map((tag, index) => (

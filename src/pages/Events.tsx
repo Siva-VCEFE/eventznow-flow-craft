@@ -25,10 +25,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const Events = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
 
   const events = [
     {
@@ -75,9 +94,73 @@ const Events = () => {
     }
   ];
 
-  const filteredEvents = events.filter(event =>
-    event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = event.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         event.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || event.status.toLowerCase() === statusFilter;
+    const matchesType = typeFilter === "all" || event.type.toLowerCase() === typeFilter;
+    
+    return matchesSearch && matchesStatus && matchesType;
+  });
+
+  const FilterDialog = () => (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline">
+          <Filter className="w-4 h-4 mr-2" />
+          Filter
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Filter Events</DialogTitle>
+          <DialogDescription>Apply filters to find specific events</DialogDescription>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div>
+            <Label>Status</Label>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Status</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Type</Label>
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="free">Free</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>Date Range</Label>
+            <Select value={dateFilter} onValueChange={setDateFilter}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Dates</SelectItem>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="this-month">This Month</SelectItem>
+                <SelectItem value="past">Past Events</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 
   return (
@@ -109,10 +192,7 @@ const Events = () => {
               className="pl-10"
             />
           </div>
-          <Button variant="outline">
-            <Filter className="w-4 h-4 mr-2" />
-            Filter
-          </Button>
+          <FilterDialog />
         </div>
 
         {/* Events Grid */}
