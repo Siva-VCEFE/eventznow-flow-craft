@@ -12,11 +12,14 @@ import {
   Calendar,
   Download,
   Filter,
-  Clock
+  Clock,
+  MessageSquare,
+  Mail,
+  Phone,
+  Share2
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
 import TimeTrackingReports from "@/components/TimeTrackingReports";
-import SubscriptionModel from "@/components/SubscriptionModel";
 
 const Analytics = () => {
   const [dateRange, setDateRange] = useState("last-30-days");
@@ -24,7 +27,7 @@ const Analytics = () => {
   const overviewStats = [
     {
       title: "Total Revenue",
-      value: "$47,890",
+      value: "₹33,54,890",
       change: "+12.5%",
       changeType: "positive",
       icon: DollarSign
@@ -45,7 +48,7 @@ const Analytics = () => {
     },
     {
       title: "Avg Event Revenue",
-      value: "$2,082",
+      value: "₹1,45,865",
       change: "+5.1%",
       changeType: "positive",
       icon: TrendingUp
@@ -56,36 +59,45 @@ const Analytics = () => {
     {
       event: "Tech Conference 2024",
       registrations: 145,
-      revenue: "$12,500",
+      revenue: "₹8,75,000",
       satisfaction: 4.8,
       taskEfficiency: 92,
-      teamHours: 65.2
+      teamHours: 65.2,
+      roi: 320,
+      attendanceRate: 87,
+      feedbackCount: 89
     },
     {
       event: "Product Launch Webinar",
       registrations: 89,
-      revenue: "$0",
+      revenue: "₹0",
       satisfaction: 4.2,
       taskEfficiency: 78,
-      teamHours: 28.5
+      teamHours: 28.5,
+      roi: 0,
+      attendanceRate: 94,
+      feedbackCount: 56
     },
     {
       event: "Marketing Workshop",
       registrations: 67,
-      revenue: "$3,400",
+      revenue: "₹2,38,000",
       satisfaction: 4.6,
       taskEfficiency: 85,
-      teamHours: 42.8
+      teamHours: 42.8,
+      roi: 245,
+      attendanceRate: 78,
+      feedbackCount: 45
     }
   ];
 
   const revenueByMonth = [
-    { month: "Jan", revenue: 8500, events: 3 },
-    { month: "Feb", revenue: 12300, events: 4 },
-    { month: "Mar", revenue: 15600, events: 5 },
-    { month: "Apr", revenue: 11200, events: 4 },
-    { month: "May", revenue: 18900, events: 6 },
-    { month: "Jun", revenue: 21400, events: 7 }
+    { month: "Jan", revenue: 595000, events: 3 },
+    { month: "Feb", revenue: 861000, events: 4 },
+    { month: "Mar", revenue: 1092000, events: 5 },
+    { month: "Apr", revenue: 784000, events: 4 },
+    { month: "May", revenue: 1323000, events: 6 },
+    { month: "Jun", revenue: 1498000, events: 7 }
   ];
 
   const participantDemographics = {
@@ -96,12 +108,28 @@ const Analytics = () => {
       { source: "Referral", count: 254, percentage: 9 }
     ],
     byLocation: [
-      { location: "San Francisco", count: 658, percentage: 23 },
-      { location: "New York", count: 542, percentage: 19 },
-      { location: "Los Angeles", count: 423, percentage: 15 },
-      { location: "Chicago", count: 389, percentage: 14 },
-      { location: "Other", count: 835, percentage: 29 }
+      { location: "Mumbai", count: 658, percentage: 23 },
+      { location: "Delhi", count: 542, percentage: 19 },
+      { location: "Bangalore", count: 423, percentage: 15 },
+      { location: "Chennai", count: 389, percentage: 14 },
+      { location: "Other Cities", count: 835, percentage: 29 }
     ]
+  };
+
+  const handleShare = (reportType: string, method: string) => {
+    const message = `Check out our latest ${reportType} report from EventzNow Analytics`;
+    
+    switch(method) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+        break;
+      case 'email':
+        window.open(`mailto:?subject=${encodeURIComponent(`${reportType} Report`)}&body=${encodeURIComponent(message)}`, '_blank');
+        break;
+      case 'sms':
+        window.open(`sms:?body=${encodeURIComponent(message)}`);
+        break;
+    }
   };
 
   return (
@@ -126,13 +154,12 @@ const Analytics = () => {
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="revenue">Revenue</TabsTrigger>
             <TabsTrigger value="participants">Participants</TabsTrigger>
             <TabsTrigger value="time-tracking">Time Tracking</TabsTrigger>
-            <TabsTrigger value="subscription">Subscription</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -162,8 +189,20 @@ const Analytics = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Revenue Trend</CardTitle>
-                  <CardDescription>Monthly revenue and event count</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Revenue Trend (INR)</CardTitle>
+                      <CardDescription>Monthly revenue and event count</CardDescription>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => handleShare('Revenue Trend', 'whatsapp')}>
+                        <MessageSquare className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleShare('Revenue Trend', 'email')}>
+                        <Mail className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 flex items-center justify-center text-gray-500">
@@ -174,8 +213,20 @@ const Analytics = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Event Performance</CardTitle>
-                  <CardDescription>Registration vs satisfaction scores</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Event Performance</CardTitle>
+                      <CardDescription>Registration vs satisfaction scores</CardDescription>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => handleShare('Event Performance', 'whatsapp')}>
+                        <MessageSquare className="w-4 h-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleShare('Event Performance', 'email')}>
+                        <Mail className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 flex items-center justify-center text-gray-500">
@@ -189,8 +240,22 @@ const Analytics = () => {
           <TabsContent value="events" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Event Performance Report</CardTitle>
-                <CardDescription>Detailed analysis of all events including team efficiency</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Event Performance Report</CardTitle>
+                    <CardDescription>Detailed analysis with ROI calculations and attendance tracking</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleShare('Event Performance', 'whatsapp')}>
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      WhatsApp
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleShare('Event Performance', 'email')}>
+                      <Mail className="w-4 h-4 mr-1" />
+                      Email
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -201,29 +266,44 @@ const Analytics = () => {
                         <Badge variant="secondary">{event.registrations} registered</Badge>
                       </div>
                       
-                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
                         <div>
                           <p className="text-gray-600">Revenue</p>
                           <p className="font-semibold text-lg">{event.revenue}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">ROI</p>
+                          <p className="font-semibold text-lg text-green-600">
+                            {event.roi > 0 ? `${event.roi}%` : 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Attendance Rate</p>
+                          <p className="font-semibold text-lg">{event.attendanceRate}%</p>
                         </div>
                         <div>
                           <p className="text-gray-600">Satisfaction</p>
                           <p className="font-semibold text-lg">{event.satisfaction}/5.0</p>
                         </div>
                         <div>
-                          <p className="text-gray-600">Task Efficiency</p>
-                          <p className="font-semibold text-lg">{event.taskEfficiency}%</p>
-                        </div>
-                        <div>
                           <p className="text-gray-600">Team Hours</p>
                           <p className="font-semibold text-lg">{event.teamHours}h</p>
                         </div>
                         <div>
-                          <p className="text-gray-600">ROI</p>
-                          <p className="font-semibold text-lg text-green-600">
-                            {event.revenue !== "$0" ? "245%" : "N/A"}
-                          </p>
+                          <p className="text-gray-600">Feedback</p>
+                          <p className="font-semibold text-lg">{event.feedbackCount}</p>
                         </div>
+                      </div>
+
+                      <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <h5 className="font-medium text-blue-900 mb-2">ROI Calculation:</h5>
+                        <p className="text-sm text-blue-800">
+                          {event.roi > 0 ? (
+                            `Revenue (${event.revenue}) - Costs (₹${Math.round(parseInt(event.revenue.replace('₹', '').replace(',', '')) / (event.roi/100 + 1)).toLocaleString()}) = Profit of ${event.roi}%`
+                          ) : (
+                            'Free event - ROI calculated based on lead generation value and team efficiency'
+                          )}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -236,8 +316,15 @@ const Analytics = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Revenue by Month</CardTitle>
-                  <CardDescription>Track monthly revenue growth</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Revenue by Month (INR)</CardTitle>
+                      <CardDescription>Track monthly revenue growth</CardDescription>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => handleShare('Monthly Revenue', 'whatsapp')}>
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -245,7 +332,7 @@ const Analytics = () => {
                       <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded">
                         <span className="font-medium">{month.month}</span>
                         <div className="text-right">
-                          <p className="font-semibold">${month.revenue.toLocaleString()}</p>
+                          <p className="font-semibold">₹{month.revenue.toLocaleString()}</p>
                           <p className="text-sm text-gray-600">{month.events} events</p>
                         </div>
                       </div>
@@ -263,15 +350,15 @@ const Analytics = () => {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center p-3 border rounded">
                       <span>Paid Events</span>
-                      <span className="font-semibold">$45,230 (94.4%)</span>
+                      <span className="font-semibold">₹31,67,230 (94.4%)</span>
                     </div>
                     <div className="flex justify-between items-center p-3 border rounded">
                       <span>Sponsorships</span>
-                      <span className="font-semibold">$2,660 (5.6%)</span>
+                      <span className="font-semibold">₹1,86,360 (5.6%)</span>
                     </div>
                     <div className="flex justify-between items-center p-3 border rounded">
                       <span>Premium Features</span>
-                      <span className="font-semibold">$890 (1.9%)</span>
+                      <span className="font-semibold">₹62,300 (1.9%)</span>
                     </div>
                   </div>
                 </CardContent>
@@ -283,8 +370,15 @@ const Analytics = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Participant Sources</CardTitle>
-                  <CardDescription>Where participants are coming from</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Participant Sources</CardTitle>
+                      <CardDescription>Where participants are coming from</CardDescription>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => handleShare('Participant Sources', 'whatsapp')}>
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -303,8 +397,15 @@ const Analytics = () => {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Geographic Distribution</CardTitle>
-                  <CardDescription>Participant locations</CardDescription>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle>Geographic Distribution</CardTitle>
+                      <CardDescription>Participant locations across India</CardDescription>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={() => handleShare('Geographic Distribution', 'whatsapp')}>
+                      <Share2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
@@ -324,8 +425,22 @@ const Analytics = () => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Participant Engagement Metrics</CardTitle>
-                <CardDescription>Detailed engagement and retention analytics</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Participant Engagement Metrics</CardTitle>
+                    <CardDescription>Detailed engagement and retention analytics</CardDescription>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={() => handleShare('Engagement Metrics', 'whatsapp')}>
+                      <MessageSquare className="w-4 h-4 mr-1" />
+                      WhatsApp
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleShare('Engagement Metrics', 'email')}>
+                      <Mail className="w-4 h-4 mr-1" />
+                      Email
+                    </Button>
+                  </div>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -352,10 +467,6 @@ const Analytics = () => {
 
           <TabsContent value="time-tracking">
             <TimeTrackingReports />
-          </TabsContent>
-
-          <TabsContent value="subscription">
-            <SubscriptionModel />
           </TabsContent>
         </Tabs>
       </div>

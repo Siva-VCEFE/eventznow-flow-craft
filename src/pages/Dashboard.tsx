@@ -16,10 +16,21 @@ import {
   MoreVertical,
   MapPin,
   Clock,
-  UserCheck
+  UserCheck,
+  Eye,
+  Edit,
+  Share2,
+  Phone,
+  Mail
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -41,7 +52,7 @@ const Dashboard = () => {
     },
     {
       title: "Revenue",
-      value: "$24,567",
+      value: "₹17,25,890",
       change: "+8% from last month",
       icon: DollarSign,
       color: "text-purple-600"
@@ -61,10 +72,13 @@ const Dashboard = () => {
       name: "Tech Conference 2024",
       date: "2024-03-15",
       time: "09:00 AM",
-      location: "San Francisco, CA",
+      location: "Mumbai, India",
       registrations: 145,
       status: "Active",
-      revenue: "$12,500"
+      revenue: "₹8,75,000",
+      paidCount: 98,
+      attendedCount: 67,
+      feedbackCount: 45
     },
     {
       id: 2,
@@ -74,17 +88,23 @@ const Dashboard = () => {
       location: "Online",
       registrations: 89,
       status: "Active",
-      revenue: "$0"
+      revenue: "₹0",
+      paidCount: 0,
+      attendedCount: 0,
+      feedbackCount: 0
     },
     {
       id: 3,
       name: "Marketing Workshop",
       date: "2024-03-22",
       time: "10:00 AM",
-      location: "New York, NY",
+      location: "Delhi, India",
       registrations: 67,
       status: "Draft",
-      revenue: "$3,400"
+      revenue: "₹2,38,000",
+      paidCount: 45,
+      attendedCount: 0,
+      feedbackCount: 0
     }
   ];
 
@@ -95,7 +115,8 @@ const Dashboard = () => {
       event: "Tech Conference 2024",
       assignee: "Sarah Johnson",
       dueDate: "Today",
-      priority: "High"
+      priority: "High",
+      timeSpent: "2.5h"
     },
     {
       id: 2,
@@ -103,7 +124,8 @@ const Dashboard = () => {
       event: "Product Launch Webinar",
       assignee: "Mike Chen",
       dueDate: "Tomorrow",
-      priority: "Medium"
+      priority: "Medium",
+      timeSpent: "1.2h"
     },
     {
       id: 3,
@@ -111,9 +133,46 @@ const Dashboard = () => {
       event: "Marketing Workshop",
       assignee: "Lisa Park",
       dueDate: "Mar 20",
-      priority: "Low"
+      priority: "Low",
+      timeSpent: "0.8h"
     }
   ];
+
+  const handleEventAction = (eventId: number, action: string) => {
+    switch(action) {
+      case 'view':
+        navigate(`/events/${eventId}`);
+        break;
+      case 'edit':
+        navigate(`/events/${eventId}/edit`);
+        break;
+      case 'participants':
+        navigate(`/participants?event=${eventId}`);
+        break;
+      case 'tasks':
+        navigate(`/tasks?event=${eventId}`);
+        break;
+      case 'share':
+        // Handle sharing
+        console.log('Sharing event', eventId);
+        break;
+    }
+  };
+
+  const handleTaskAction = (taskId: number, action: string) => {
+    switch(action) {
+      case 'view':
+        navigate(`/tasks/${taskId}`);
+        break;
+      case 'edit':
+        navigate(`/tasks/${taskId}/edit`);
+        break;
+      case 'assign':
+        // Handle reassignment
+        console.log('Reassigning task', taskId);
+        break;
+    }
+  };
 
   return (
     <DashboardLayout>
@@ -169,7 +228,7 @@ const Dashboard = () => {
                     <CardTitle>Recent Events</CardTitle>
                     <CardDescription>Manage your upcoming and ongoing events</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => navigate('/events')}>
                     View All
                   </Button>
                 </div>
@@ -185,7 +244,7 @@ const Dashboard = () => {
                             {event.status}
                           </Badge>
                         </div>
-                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-2">
                           <div className="flex items-center gap-1">
                             <Calendar className="w-4 h-4" />
                             {event.date}
@@ -203,15 +262,46 @@ const Dashboard = () => {
                             {event.registrations} registered
                           </div>
                         </div>
+                        <div className="flex gap-4 text-xs text-gray-500">
+                          <span>Paid: {event.paidCount}</span>
+                          <span>Attended: {event.attendedCount}</span>
+                          <span>Feedback: {event.feedbackCount}</span>
+                        </div>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
                           <p className="font-semibold text-gray-900">{event.revenue}</p>
                           <p className="text-sm text-gray-600">Revenue</p>
                         </div>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="w-4 h-4" />
-                        </Button>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm">
+                              <MoreVertical className="w-4 h-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleEventAction(event.id, 'view')}>
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEventAction(event.id, 'edit')}>
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit Event
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEventAction(event.id, 'participants')}>
+                              <Users className="w-4 h-4 mr-2" />
+                              View Participants
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEventAction(event.id, 'tasks')}>
+                              <Settings className="w-4 h-4 mr-2" />
+                              Manage Tasks
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEventAction(event.id, 'share')}>
+                              <Share2 className="w-4 h-4 mr-2" />
+                              Share Event
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
                   ))}
@@ -226,11 +316,11 @@ const Dashboard = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle>Active Tasks</CardTitle>
-                    <CardDescription>Track and manage your team's tasks</CardDescription>
+                    <CardDescription>Track and manage your team's tasks with time tracking</CardDescription>
                   </div>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => navigate('/tasks')}>
                     <Plus className="w-4 h-4 mr-2" />
-                    Add Task
+                    View All Tasks
                   </Button>
                 </div>
               </CardHeader>
@@ -254,11 +344,31 @@ const Dashboard = () => {
                           <span>Assigned to: {task.assignee}</span>
                           <span>•</span>
                           <span>Due: {task.dueDate}</span>
+                          <span>•</span>
+                          <span className="text-blue-600 font-medium">Time: {task.timeSpent}</span>
                         </div>
                       </div>
-                      <Button variant="ghost" size="sm">
-                        <MoreVertical className="w-4 h-4" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => handleTaskAction(task.id, 'view')}>
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Task
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTaskAction(task.id, 'edit')}>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit Task
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleTaskAction(task.id, 'assign')}>
+                            <Users className="w-4 h-4 mr-2" />
+                            Reassign
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   ))}
                 </div>
@@ -283,7 +393,7 @@ const Dashboard = () => {
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle>Revenue Overview</CardTitle>
-                  <CardDescription>Monitor your event revenue streams</CardDescription>
+                  <CardDescription>Monitor your event revenue streams in INR</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 flex items-center justify-center text-gray-500">

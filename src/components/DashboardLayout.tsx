@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -15,7 +14,8 @@ import {
   Plus,
   UserCircle,
   Home,
-  Users2
+  Users2,
+  CreditCard
 } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -29,14 +29,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const menuItems = [
-    { name: "Dashboard", icon: Home, path: "/dashboard" },
-    { name: "Events", icon: Calendar, path: "/events" },
-    { name: "Participants", icon: Users, path: "/participants" },
-    { name: "Tasks", icon: CheckSquare, path: "/tasks" },
-    { name: "Team", icon: Users2, path: "/team" },
-    { name: "Analytics", icon: BarChart3, path: "/analytics" },
-    { name: "Settings", icon: Settings, path: "/settings" },
+  const navigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: Home },
+    { name: 'Events', href: '/events', icon: Calendar },
+    { name: 'Participants', href: '/participants', icon: Users },
+    { name: 'Tasks', href: '/tasks', icon: CheckSquare },
+    { name: 'Team', href: '/team', icon: Users },
+    { name: 'Analytics', href: '/analytics', icon: BarChart3 },
+    { name: 'Billing', href: '/billing', icon: CreditCard },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
@@ -64,17 +65,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
         <nav className="mt-6 px-3">
           <div className="space-y-1">
-            {menuItems.map((item) => (
+            {navigation.map((item) => (
               <Button
                 key={item.name}
-                variant={isActive(item.path) ? "default" : "ghost"}
+                variant={isActive(item.href) ? "default" : "ghost"}
                 className={`w-full justify-start ${
-                  isActive(item.path) 
+                  isActive(item.href) 
                     ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white" 
                     : "text-gray-700 hover:bg-gray-100"
                 }`}
                 onClick={() => {
-                  navigate(item.path);
+                  navigate(item.href);
                   setSidebarOpen(false);
                 }}
               >

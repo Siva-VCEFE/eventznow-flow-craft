@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Check,
-  X
+  X,
+  Plus,
+  Eye,
+  IndianRupee
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "@/components/DashboardLayout";
@@ -26,7 +28,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 const CreateEvent = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const [eventData, setEventData] = useState({
     // Basic Info
@@ -40,10 +42,10 @@ const CreateEvent = () => {
     endDate: "",
     startTime: "",
     endTime: "",
-    timezone: "",
+    timezone: "IST",
     
     // Location
-    locationType: "venue", // venue or online
+    locationType: "venue",
     venue: "",
     address: "",
     onlineUrl: "",
@@ -54,30 +56,34 @@ const CreateEvent = () => {
     registrationEnd: "",
     customFields: [] as any[],
     
-    // Payment
+    // Payment - Multiple pricing tiers
     isPaid: false,
-    price: "",
-    currency: "USD",
+    pricingTiers: [] as any[],
+    currency: "INR",
     
     // Documents
     banner: null as File | null,
     documents: [] as File[]
   });
 
+  const [showFormPreview, setShowFormPreview] = useState(false);
+
   const steps = [
     { id: 1, name: "Basic Info", icon: Calendar },
     { id: 2, name: "Schedule", icon: Clock },
     { id: 3, name: "Location", icon: MapPin },
     { id: 4, name: "Registration", icon: Users },
-    { id: 5, name: "Payment & Docs", icon: CreditCard }
+    { id: 5, name: "Pricing", icon: CreditCard },
+    { id: 6, name: "Documents", icon: Upload }
   ];
 
   const handleNext = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Handle form submission
-      console.log("Event data:", eventData);
+      // Generate unique registration link
+      const registrationLink = `https://eventz.app/register/${eventData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`;
+      console.log("Event data:", { ...eventData, registrationLink });
       navigate('/dashboard');
     }
   };
@@ -92,12 +98,36 @@ const CreateEvent = () => {
     setEventData(prev => ({ ...prev, [field]: value }));
   };
 
+  const addPricingTier = () => {
+    const newTier = {
+      id: Date.now(),
+      name: "",
+      price: "",
+      description: "",
+      maxTickets: "",
+      earlyBirdDiscount: false,
+      discountPercentage: 0
+    };
+    updateEventData("pricingTiers", [...eventData.pricingTiers, newTier]);
+  };
+
+  const removePricingTier = (id: number) => {
+    updateEventData("pricingTiers", eventData.pricingTiers.filter(tier => tier.id !== id));
+  };
+
+  const updatePricingTier = (id: number, field: string, value: any) => {
+    updateEventData("pricingTiers", eventData.pricingTiers.map(tier => 
+      tier.id === id ? { ...tier, [field]: value } : tier
+    ));
+  };
+
   const addCustomField = () => {
     const newField = {
       id: Date.now(),
       label: "",
       type: "text",
-      required: false
+      required: false,
+      options: []
     };
     updateEventData("customFields", [...eventData.customFields, newField]);
   };
@@ -111,6 +141,76 @@ const CreateEvent = () => {
       f.id === id ? { ...f, [field]: value } : f
     ));
   };
+
+  const FormPreview = () => (
+    <Card className="mt-4">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Eye className="w-5 h-5" />
+          Registration Form Preview
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div>
+          <Label>Full Name *</Label>
+          <Input placeholder="Enter your full name" disabled />
+        </div>
+        <div>
+          <Label>Email Address *</Label>
+          <Input type="email" placeholder="your@email.com" disabled />
+        </div>
+        <div>
+          <Label>Phone Number *</Label>
+          <Input placeholder="+91 9876543210" disabled />
+        </div>
+        
+        {eventData.customFields.map((field) => (
+          <div key={field.id}>
+            <Label>{field.label} {field.required && '*'}</Label>
+            {field.type === 'text' && <Input placeholder={`Enter ${field.label.toLowerCase()}`} disabled />}
+            {field.type === 'email' && <Input type="email" placeholder="email@example.com" disabled />}
+            {field.type === 'number' && <Input type="number" placeholder="0" disabled />}
+            {field.type === 'textarea' && <Textarea placeholder={`Enter ${field.label.toLowerCase()}`} disabled />}
+            {field.type === 'select' && (
+              <Select disabled>
+                <SelectTrigger>
+                  <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+                </SelectTrigger>
+              </Select>
+            )}
+          </div>
+        ))}
+
+        {eventData.isPaid && eventData.pricingTiers.length > 0 && (
+          <div>
+            <Label>Select Ticket Type *</Label>
+            <div className="space-y-2 mt-2">
+              {eventData.pricingTiers.map((tier) => (
+                <div key={tier.id} className="border rounded p-3">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="font-medium">{tier.name || 'Ticket Type'}</h4>
+                      <p className="text-sm text-gray-600">{tier.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">₹{tier.price || '0'}</p>
+                      {tier.earlyBirdDiscount && (
+                        <p className="text-sm text-green-600">{tier.discountPercentage}% Early Bird</p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        <Button className="w-full" disabled>
+          {eventData.isPaid ? 'Proceed to Payment' : 'Register Now'}
+        </Button>
+      </CardContent>
+    </Card>
+  );
 
   const renderStepContent = () => {
     switch (currentStep) {
@@ -232,9 +332,10 @@ const CreateEvent = () => {
               <Label htmlFor="timezone">Timezone</Label>
               <Select value={eventData.timezone} onValueChange={(value) => updateEventData("timezone", value)}>
                 <SelectTrigger className="mt-2">
-                  <SelectValue placeholder="Select timezone" />
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="IST">Indian Standard Time (IST)</SelectItem>
                   <SelectItem value="UTC">UTC</SelectItem>
                   <SelectItem value="EST">Eastern Time (EST)</SelectItem>
                   <SelectItem value="PST">Pacific Time (PST)</SelectItem>
@@ -417,6 +518,19 @@ const CreateEvent = () => {
                 ))}
               </div>
             </div>
+
+            <div className="flex items-center justify-between">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowFormPreview(!showFormPreview)}
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                {showFormPreview ? 'Hide' : 'Show'} Form Preview
+              </Button>
+            </div>
+
+            {showFormPreview && <FormPreview />}
           </div>
         );
 
@@ -433,36 +547,102 @@ const CreateEvent = () => {
               </div>
               
               {eventData.isPaid && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="price">Ticket Price</Label>
-                    <Input
-                      id="price"
-                      type="number"
-                      placeholder="0.00"
-                      value={eventData.price}
-                      onChange={(e) => updateEventData("price", e.target.value)}
-                      className="mt-2"
-                    />
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label>Pricing Tiers</Label>
+                    <Button type="button" variant="outline" onClick={addPricingTier}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Pricing Tier
+                    </Button>
                   </div>
-                  <div>
-                    <Label htmlFor="currency">Currency</Label>
-                    <Select value={eventData.currency} onValueChange={(value) => updateEventData("currency", value)}>
-                      <SelectTrigger className="mt-2">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="USD">USD ($)</SelectItem>
-                        <SelectItem value="EUR">EUR (€)</SelectItem>
-                        <SelectItem value="GBP">GBP (£)</SelectItem>
-                        <SelectItem value="INR">INR (₹)</SelectItem>
-                      </SelectContent>
-                    </Select>
+
+                  <div className="space-y-4">
+                    {eventData.pricingTiers.map((tier) => (
+                      <div key={tier.id} className="p-4 border border-gray-200 rounded-lg">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label>Tier Name</Label>
+                            <Input
+                              placeholder="e.g., Early Bird, Regular, VIP"
+                              value={tier.name}
+                              onChange={(e) => updatePricingTier(tier.id, "name", e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label className="flex items-center gap-1">
+                              <IndianRupee className="w-4 h-4" />
+                              Price (INR)
+                            </Label>
+                            <Input
+                              type="number"
+                              placeholder="2500"
+                              value={tier.price}
+                              onChange={(e) => updatePricingTier(tier.id, "price", e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <Label>Description</Label>
+                            <Input
+                              placeholder="Brief description of this tier"
+                              value={tier.description}
+                              onChange={(e) => updatePricingTier(tier.id, "description", e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <Label>Max Tickets</Label>
+                            <Input
+                              type="number"
+                              placeholder="100"
+                              value={tier.maxTickets}
+                              onChange={(e) => updatePricingTier(tier.id, "maxTickets", e.target.value)}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Switch
+                              checked={tier.earlyBirdDiscount}
+                              onCheckedChange={(checked) => updatePricingTier(tier.id, "earlyBirdDiscount", checked)}
+                            />
+                            <Label>Early Bird Discount</Label>
+                            {tier.earlyBirdDiscount && (
+                              <Input
+                                type="number"
+                                placeholder="10"
+                                value={tier.discountPercentage}
+                                onChange={(e) => updatePricingTier(tier.id, "discountPercentage", e.target.value)}
+                                className="w-20 ml-2"
+                              />
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => removePricingTier(tier.id)}
+                          >
+                            <X className="w-4 h-4 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
             </div>
-            
+          </div>
+        );
+
+      case 6:
+        return (
+          <div className="space-y-6">
             <div>
               <Label>Event Banner</Label>
               <div className="mt-2">
@@ -476,24 +656,6 @@ const CreateEvent = () => {
                       <p className="text-xs text-gray-500">PNG, JPG (MAX. 1920x1080px)</p>
                     </div>
                     <input type="file" className="hidden" accept="image/*" />
-                  </label>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <Label>Additional Documents</Label>
-              <div className="mt-2">
-                <div className="flex items-center justify-center w-full">
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 mb-4 text-gray-500" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Upload documents</span>
-                      </p>
-                      <p className="text-xs text-gray-500">PDF, DOC, Images</p>
-                    </div>
-                    <input type="file" className="hidden" multiple />
                   </label>
                 </div>
               </div>
