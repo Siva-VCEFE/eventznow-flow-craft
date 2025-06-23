@@ -4,28 +4,33 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
+  Calendar, 
+  Users, 
   CheckSquare, 
-  Search,
-  Filter,
-  Calendar,
-  User,
   Clock,
-  CheckCircle,
-  Circle,
-  AlertTriangle,
-  Users
+  Filter,
+  Plus,
+  Search,
+  MoreVertical,
+  Edit,
+  Check,
+  Phone,
+  User,
+  Share2,
+  FileText,
+  PlayCircle,
+  PauseCircle
 } from "lucide-react";
 import DashboardLayout from "@/components/DashboardLayout";
+import TaskAssignmentDialog from "@/components/TaskAssignmentDialog";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Select,
   SelectContent,
@@ -33,407 +38,319 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import TaskAssignmentDialog from "@/components/TaskAssignmentDialog";
 
 const Tasks = () => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState("all");
-  const [filterPriority, setFilterPriority] = useState("all");
-  const [filterAssignee, setFilterAssignee] = useState("all");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
+  const [selectedPriority, setSelectedPriority] = useState("all");
+  const [activeTab, setActiveTab] = useState("all");
 
-  const tasks = [
+  const [tasks, setTasks] = useState([
     {
       id: 1,
-      title: "Follow up with VIP attendees",
-      description: "Contact all VIP ticket holders for special arrangements and confirm their attendance",
+      title: "Call VIP attendees - Tech Conference 2024",
+      description: "Contact all VIP ticket holders for special arrangements and requirements",
       event: "Tech Conference 2024",
       assignee: "Sarah Johnson",
       assigneeType: "individual",
-      assigneeEmail: "sarah@eventznow.com",
       dueDate: "2024-03-10",
       status: "In Progress",
       priority: "High",
-      createdDate: "2024-02-15",
-      tags: ["VIP", "Follow-up"],
-      estimatedHours: 6,
-      actualHours: 4.5,
-      teamMembers: []
+      timeSpent: "2.5h",
+      totalParticipants: 25,
+      contacted: 15,
+      pending: 10,
+      type: "call_followup",
+      callSetting: "all_agents"
     },
     {
       id: 2,
-      title: "Setup registration desk",
-      description: "Prepare registration area with banners, materials, and check-in systems",
-      event: "Tech Conference 2024",
-      assignee: "Event Setup Team",
+      title: "Setup registration desk materials",
+      description: "Prepare registration area with banners, materials, and welcome kits",
+      event: "Product Launch Webinar",
+      assignee: "Marketing Team",
       assigneeType: "team",
-      teamMembers: ["Mike Chen", "Lisa Park", "David Wilson"],
       dueDate: "2024-03-14",
       status: "Pending",
       priority: "Medium",
-      createdDate: "2024-02-20",
-      tags: ["Setup", "Registration"],
-      estimatedHours: 8,
-      actualHours: 0
+      timeSpent: "1.2h",
+      totalParticipants: 0,
+      contacted: 0,
+      pending: 0,
+      type: "setup",
+      callSetting: null
     },
     {
       id: 3,
-      title: "Send welcome emails",
-      description: "Send event details, schedule, and logistics information to all registered participants",
+      title: "Send welcome emails to participants",
+      description: "Send event details, schedule, and joining instructions",
       event: "Marketing Workshop",
       assignee: "Lisa Park",
       assigneeType: "individual",
-      assigneeEmail: "lisa@eventznow.com",
       dueDate: "2024-03-12",
       status: "Completed",
       priority: "Low",
-      createdDate: "2024-02-18",
-      tags: ["Email", "Communication"],
-      estimatedHours: 3,
-      actualHours: 2.8,
-      teamMembers: []
-    },
-    {
-      id: 4,
-      title: "Coordinate catering setup",
-      description: "Finalize menu, confirm headcount, and coordinate with catering team for event day",
-      event: "Product Launch Webinar",
-      assignee: "Logistics Team",
-      assigneeType: "team",
-      teamMembers: ["David Wilson", "Alex Johnson"],
-      dueDate: "2024-03-08",
-      status: "Overdue",
-      priority: "High",
-      createdDate: "2024-02-10",
-      tags: ["Catering", "Logistics"],
-      estimatedHours: 5,
-      actualHours: 6.2
-    },
-    {
-      id: 5,
-      title: "Test AV equipment",
-      description: "Check all audio/visual equipment, microphones, and presentation setup",
-      event: "Tech Conference 2024",
-      assignee: "Alex Johnson",
-      assigneeType: "individual",
-      assigneeEmail: "alex@eventznow.com",
-      dueDate: "2024-03-13",
-      status: "In Progress",
-      priority: "Medium",
-      createdDate: "2024-02-22",
-      tags: ["AV", "Technical"],
-      estimatedHours: 4,
-      actualHours: 2.1,
-      teamMembers: []
+      timeSpent: "0.8h",
+      totalParticipants: 67,
+      contacted: 67,
+      pending: 0,
+      type: "communication",
+      callSetting: null
     }
-  ];
+  ]);
 
-  const filteredTasks = tasks.filter(task => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.event.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         task.assignee.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === "all" || task.status.toLowerCase().replace(' ', '') === filterStatus;
-    const matchesPriority = filterPriority === "all" || task.priority.toLowerCase() === filterPriority;
-    const matchesAssignee = filterAssignee === "all" || task.assignee.toLowerCase().includes(filterAssignee.toLowerCase());
-    
-    return matchesSearch && matchesStatus && matchesPriority && matchesAssignee;
-  });
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'Completed':
-        return <CheckCircle className="w-5 h-5 text-green-600" />;
-      case 'Overdue':
-        return <AlertTriangle className="w-5 h-5 text-red-600" />;
-      default:
-        return <Circle className="w-5 h-5 text-gray-400" />;
-    }
+  const handleTaskAction = (taskId: number, action: string) => {
+    setTasks(prevTasks => 
+      prevTasks.map(task => {
+        if (task.id === taskId) {
+          switch(action) {
+            case 'complete':
+              return { ...task, status: 'Completed' };
+            case 'start':
+              return { ...task, status: 'In Progress' };
+            case 'pause':
+              return { ...task, status: 'Paused' };
+            default:
+              return task;
+          }
+        }
+        return task;
+      })
+    );
   };
 
+  const filteredTasks = tasks.filter(task => {
+    if (activeTab !== "all" && task.status.toLowerCase().replace(" ", "_") !== activeTab) return false;
+    if (selectedEvent !== "all" && task.event !== selectedEvent) return false;
+    if (selectedStatus !== "all" && task.status !== selectedStatus) return false;
+    if (selectedPriority !== "all" && task.priority !== selectedPriority) return false;
+    return true;
+  });
+
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Completed':
-        return 'default';
-      case 'In Progress':
-        return 'secondary';
-      case 'Overdue':
-        return 'destructive';
-      default:
-        return 'outline';
+    switch(status) {
+      case 'Completed': return 'bg-green-100 text-green-800';
+      case 'In Progress': return 'bg-blue-100 text-blue-800';
+      case 'Paused': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'High':
-        return 'destructive';
-      case 'Medium':
-        return 'default';
-      default:
-        return 'secondary';
+    switch(priority) {
+      case 'High': return 'bg-red-100 text-red-800';
+      case 'Medium': return 'bg-orange-100 text-orange-800';
+      case 'Low': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const TaskFiltersDialog = () => (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Filter className="w-4 h-4 mr-2" />
-          More Filters
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Advanced Task Filters</DialogTitle>
-          <DialogDescription>Apply detailed filters to find specific tasks</DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <Label>Status</Label>
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="inprogress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="overdue">Overdue</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label>Priority</Label>
-            <Select value={filterPriority} onValueChange={setFilterPriority}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Priorities</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="medium">Medium</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="critical">Critical</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label>Assignee</Label>
-            <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Assignees</SelectItem>
-                <SelectItem value="sarah">Sarah Johnson</SelectItem>
-                <SelectItem value="mike">Mike Chen</SelectItem>
-                <SelectItem value="lisa">Lisa Park</SelectItem>
-                <SelectItem value="david">David Wilson</SelectItem>
-                <SelectItem value="alex">Alex Johnson</SelectItem>
-                <SelectItem value="team">Team Tasks</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Tasks</h1>
-            <p className="text-gray-600 mt-1">Track and manage all event-related tasks and assignments</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Task Management</h1>
+            <p className="text-gray-600 mt-1">Manage and track all event-related tasks</p>
           </div>
-          <TaskAssignmentDialog />
-        </div>
-
-        {/* Search and Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search tasks..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <TaskAssignmentDialog />
           </div>
-          <select 
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-md"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="inprogress">In Progress</option>
-            <option value="completed">Completed</option>
-            <option value="overdue">Overdue</option>
-          </select>
-          <TaskFiltersDialog />
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Total Tasks</p>
-                  <p className="text-2xl font-bold text-gray-900">{tasks.length}</p>
-                </div>
-                <CheckSquare className="w-8 h-8 text-blue-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Completed</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {tasks.filter(t => t.status === 'Completed').length}
-                  </p>
-                </div>
-                <CheckCircle className="w-8 h-8 text-green-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">In Progress</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {tasks.filter(t => t.status === 'In Progress').length}
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 text-purple-600" />
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Team Tasks</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {tasks.filter(t => t.assigneeType === 'team').length}
-                  </p>
-                </div>
-                <Users className="w-8 h-8 text-orange-600" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Tasks List */}
+        {/* Filters */}
         <Card className="border-0 shadow-sm">
-          <CardHeader>
-            <CardTitle>All Tasks</CardTitle>
-            <CardDescription>Manage and track task progress across all events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {filteredTasks.map((task) => (
-                <div key={task.id} className="flex items-start gap-4 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className="mt-1">
-                    {getStatusIcon(task.status)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-gray-900">{task.title}</h4>
-                          <Badge variant={getPriorityColor(task.priority)}>
-                            {task.priority}
+          <CardContent className="p-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input placeholder="Search tasks..." className="pl-10" />
+              </div>
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Select value={selectedEvent} onValueChange={setSelectedEvent}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder="Filter by Event" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Events</SelectItem>
+                    <SelectItem value="Tech Conference 2024">Tech Conference 2024</SelectItem>
+                    <SelectItem value="Product Launch Webinar">Product Launch Webinar</SelectItem>
+                    <SelectItem value="Marketing Workshop">Marketing Workshop</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="w-full sm:w-40">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Status</SelectItem>
+                    <SelectItem value="Pending">Pending</SelectItem>
+                    <SelectItem value="In Progress">In Progress</SelectItem>
+                    <SelectItem value="Completed">Completed</SelectItem>
+                    <SelectItem value="Paused">Paused</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={selectedPriority} onValueChange={setSelectedPriority}>
+                  <SelectTrigger className="w-full sm:w-36">
+                    <SelectValue placeholder="Priority" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Priority</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="Low">Low</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Task Tabs */}
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 max-w-2xl">
+            <TabsTrigger value="all">All Tasks</TabsTrigger>
+            <TabsTrigger value="pending">Pending</TabsTrigger>
+            <TabsTrigger value="in_progress">In Progress</TabsTrigger>
+            <TabsTrigger value="completed">Completed</TabsTrigger>
+            <TabsTrigger value="paused">Paused</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="space-y-4 mt-6">
+            {filteredTasks.map((task) => (
+              <Card key={task.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="p-4 sm:p-6">
+                  <div className="flex flex-col lg:flex-row gap-4">
+                    <div className="flex-1">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-3">
+                        <h4 className="font-semibold text-gray-900 text-lg">{task.title}</h4>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge className={getPriorityColor(task.priority)}>
+                            {task.priority} Priority
                           </Badge>
-                          <Badge variant={getStatusColor(task.status) as any}>
+                          <Badge className={getStatusColor(task.status)}>
                             {task.status}
                           </Badge>
-                          {task.assigneeType === 'team' && (
-                            <Badge variant="outline" className="flex items-center gap-1">
-                              <Users className="w-3 h-3" />
-                              Team Task
-                            </Badge>
-                          )}
+                          <Badge variant="outline">
+                            {task.assigneeType === 'individual' ? <User className="w-3 h-3 mr-1" /> : <Users className="w-3 h-3 mr-1" />}
+                            {task.assigneeType === 'individual' ? 'Individual' : 'Team'}
+                          </Badge>
                         </div>
-                        <p className="text-sm text-gray-600 mb-3">{task.description}</p>
                       </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="w-4 h-4" />
-                        Event: {task.event}
+                      
+                      <p className="text-gray-600 mb-3">{task.description}</p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-600">Event: {task.event}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-600">Assigned: {task.assignee}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-gray-400" />
+                          <span className="text-gray-600">Due: {task.dueDate}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-blue-600" />
+                          <span className="text-blue-600 font-medium">Time: {task.timeSpent}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1">
-                        {task.assigneeType === 'team' ? <Users className="w-4 h-4" /> : <User className="w-4 h-4" />}
-                        {task.assignee}
-                        {task.assigneeType === 'team' && (
-                          <span className="text-xs text-gray-500">
-                            ({task.teamMembers.length} members)
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-4 h-4" />
-                        Due: {task.dueDate}
-                      </div>
-                      {task.estimatedHours && (
-                        <div className="text-xs">
-                          Time: {task.actualHours || 0}h / {task.estimatedHours}h
+
+                      {task.type === 'call_followup' && (
+                        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
+                            <div className="text-center">
+                              <div className="font-semibold text-blue-900">{task.totalParticipants}</div>
+                              <div className="text-blue-600">Total Participants</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-green-700">{task.contacted}</div>
+                              <div className="text-green-600">Contacted</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-semibold text-orange-700">{task.pending}</div>
+                              <div className="text-orange-600">Pending</div>
+                            </div>
+                          </div>
                         </div>
                       )}
                     </div>
 
-                    {task.assigneeType === 'team' && task.teamMembers.length > 0 && (
-                      <div className="mb-3">
-                        <p className="text-xs text-gray-500 mb-1">Team Members:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {task.teamMembers.map((member, index) => (
-                            <Badge key={index} variant="outline" className="text-xs">
-                              {member}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex items-center gap-2">
-                      {task.tags.map((tag, index) => (
-                        <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-                          {tag}
-                        </span>
-                      ))}
+                    <div className="flex flex-row lg:flex-col gap-2 lg:w-48 justify-end lg:justify-start">
+                      {task.status === 'Pending' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleTaskAction(task.id, 'start')}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <PlayCircle className="w-4 h-4 mr-2" />
+                          Start Task
+                        </Button>
+                      )}
+                      {task.status === 'In Progress' && (
+                        <>
+                          <Button 
+                            size="sm" 
+                            onClick={() => handleTaskAction(task.id, 'complete')}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            <Check className="w-4 h-4 mr-2" />
+                            Complete
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline"
+                            onClick={() => handleTaskAction(task.id, 'pause')}
+                          >
+                            <PauseCircle className="w-4 h-4 mr-2" />
+                            Pause
+                          </Button>
+                        </>
+                      )}
+                      {task.status === 'Paused' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => handleTaskAction(task.id, 'start')}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          <PlayCircle className="w-4 h-4 mr-2" />
+                          Resume
+                        </Button>
+                      )}
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <MoreVertical className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Edit className="w-4 h-4 mr-2" />
+                            Edit Task
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Share2 className="w-4 h-4 mr-2" />
+                            Share Report
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <FileText className="w-4 h-4 mr-2" />
+                            View Details
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
-                  
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                    {task.status !== 'Completed' && (
-                      <Button size="sm">
-                        Mark Complete
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
+            ))}
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
