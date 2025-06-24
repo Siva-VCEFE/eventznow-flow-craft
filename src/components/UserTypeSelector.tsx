@@ -116,7 +116,7 @@ const UserTypeSelector = ({ onUserTypeSelect, currentUserType }: UserTypeSelecto
                     <div>
                       <CardTitle className="text-base">{userType.name}</CardTitle>
                       {currentUserType === userType.type && (
-                        <Badge className="mt-1" size="sm">Current</Badge>
+                        <Badge className="mt-1">Current</Badge>
                       )}
                     </div>
                   </div>

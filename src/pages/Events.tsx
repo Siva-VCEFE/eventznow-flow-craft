@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -385,7 +384,7 @@ const Events = () => {
                               </SelectContent>
                             </Select>
                             {event.hasActiveTasks && (
-                              <AlertCircle className="w-4 h-4 text-amber-500" title="Cannot change while tasks are active" />
+                              <AlertCircle className="w-4 h-4 text-amber-500" />
                             )}
                           </div>
                         </div>
